@@ -4,5 +4,6 @@ public enum UserRole {
     OPERATIONS,
     FINANCE,
     LEGAL,
+    SALES,
     AGENTS;
 }
