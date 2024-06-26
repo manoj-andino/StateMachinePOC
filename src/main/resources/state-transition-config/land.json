@@ -1,0 +1,20 @@
+{
+  "IDENTIFIED": {
+    "LEGAL_VERIFICATION": [
+      "OPERATIONS"
+    ]
+  },
+  "LEGAL_VERIFICATION": {
+    "SELLER_NEGOTIATION": [
+      "LEGAL"
+    ],
+    "DISMISSED": [
+      "LEGAL"
+    ]
+  },
+  "SELLER_NEGOTIATION": {
+    "DEAL_CLOSED": [
+      "FINANCE"
+    ]
+  }
+}
