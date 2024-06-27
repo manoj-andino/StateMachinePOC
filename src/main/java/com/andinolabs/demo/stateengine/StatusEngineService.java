@@ -1,5 +1,8 @@
 package com.andinolabs.demo.stateengine;
 
+import com.andinolabs.demo.commons.StateTransitionException;
+import com.andinolabs.demo.commons.StatusTransitionDraft;
+import com.andinolabs.demo.commons.StatusTransitionRepresentation;
 import com.andinolabs.demo.commons.UserRole;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
@@ -16,30 +19,31 @@ public class StatusEngineService {
 
     private final EntityStateTransitionRepository entityStateTransitionRepository;
 
-    private final RoleStateTransitionMappingRepository roleStateTransitionMappingRepository;
+    private final RoleTransitionMappingRepository roleTransitionMappingRepository;
 
-    public StatusEngineService(EntityRepository entityRepository, UserRoleRepository userRoleRepository, EntityStateTransitionRepository entityStateTransitionRepository, RoleStateTransitionMappingRepository roleStateTransitionMappingRepository) {
+    public StatusEngineService(EntityRepository entityRepository, UserRoleRepository userRoleRepository, EntityStateTransitionRepository entityStateTransitionRepository, RoleTransitionMappingRepository roleTransitionMappingRepository) {
         this.entityRepository = entityRepository;
         this.userRoleRepository = userRoleRepository;
         this.entityStateTransitionRepository = entityStateTransitionRepository;
-        this.roleStateTransitionMappingRepository = roleStateTransitionMappingRepository;
+        this.roleTransitionMappingRepository = roleTransitionMappingRepository;
     }
 
-    public Transitionable changeStateFor(UserAction userAction) {
-        var entityName = userAction.entity().getClass().getSimpleName().toUpperCase();
-        var entity = entityRepository.findByName(entityName)
-                .orElseThrow(() -> new StateTransitionException("Entity %s not found".formatted(entityName)));
+    public StatusTransitionRepresentation verifyFor(StatusTransitionDraft statusTransitionDraft) {
+        var entityName = statusTransitionDraft.entity().name();
+        var entity = entityRepository.findByName(entityName);
+        if (entity.isEmpty()) {
+            return new StatusTransitionRepresentation.ForbiddenTransition("Entity %s not found".formatted(entityName));
+        }
         var validTransitions = entityStateTransitionRepository
-                .findByEntityAndFromStateAndToState(entity, userAction.entity().getState(), userAction.toStatus());
+                .findByEntityAndFromStateAndToState(entity.get(), statusTransitionDraft.entity().currentStatus(), statusTransitionDraft.toStatus());
         if (CollectionUtils.isEmpty(validTransitions)) {
-            throw new StateTransitionException("Current state is %s, invalid transition to %s"
-                    .formatted(userAction.entity().getState(), userAction.toStatus()));
+            return new StatusTransitionRepresentation.ForbiddenTransition("Current state is %s, invalid transition to %s"
+                    .formatted(statusTransitionDraft.entity().currentStatus(), statusTransitionDraft.toStatus()));
         }
-        if (isTransitionAllowedForRole(validTransitions, userAction.role())) {
-            throw new StateTransitionException("Role not allowed to perform this transition");
+        if (isTransitionAllowedForRole(validTransitions, statusTransitionDraft.role())) {
+            return new StatusTransitionRepresentation.ForbiddenTransition("Role not allowed to perform this transition");
         }
-        userAction.entity().updateState(userAction.toStatus());
-        return userAction.entity();
+        return new StatusTransitionRepresentation.AllowedTransition();
     }
 
     private boolean isTransitionAllowedForRole(List<EntityStateTransition> possibleTransitions, UserRole userRole) {
@@ -48,9 +52,9 @@ public class StatusEngineService {
                 .collect(Collectors.toSet());
         var role = userRoleRepository.findByName(userRole)
                 .orElseThrow(() -> new StateTransitionException("Role not found"));
-        var roleTransitionMappings = roleStateTransitionMappingRepository.findByRole(role);
+        var roleTransitionMappings = roleTransitionMappingRepository.findByRole(role);
         return roleTransitionMappings.stream()
-                .map(RoleStateTransitionMapping::getStateTransition)
+                .map(RoleTransitionMapping::getStateTransition)
                 .map(EntityStateTransition::getId)
                 .noneMatch(possibleTransitionIds::contains);
     }

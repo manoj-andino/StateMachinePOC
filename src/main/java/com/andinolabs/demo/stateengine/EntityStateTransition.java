@@ -39,7 +39,7 @@ public class EntityStateTransition {
 
     @ManyToMany
     @JoinTable(
-            name = "role_state_transition",
+            name = "role_transition_mapping",
             joinColumns = @JoinColumn(name = "state_transition_id"),
             inverseJoinColumns = @JoinColumn(name = "role_id")
     )

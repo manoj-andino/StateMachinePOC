@@ -1,6 +1,5 @@
 package com.andinolabs.demo.apartmentsale;
 
-import com.andinolabs.demo.stateengine.Transitionable;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
@@ -21,7 +20,7 @@ import java.util.UUID;
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
-public class Apartment implements Transitionable {
+public class Apartment {
 
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
@@ -33,15 +32,5 @@ public class Apartment implements Transitionable {
 
     @Enumerated(EnumType.STRING)
     private ApartmentSaleStatus status;
-
-    @Override
-    public String getState() {
-        return this.status.name();
-    }
-
-    @Override
-    public void updateState(String newState) {
-        this.status = ApartmentSaleStatus.valueOf(newState);
-    }
 
 }

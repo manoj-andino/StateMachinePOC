@@ -37,7 +37,7 @@ public class UserRole {
 
     @ManyToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     @JoinTable(
-            name = "role_state_transition",
+            name = "role_transition_mapping",
             joinColumns = @JoinColumn(name = "role_id"),
             inverseJoinColumns = @JoinColumn(name = "state_transition_id")
     )

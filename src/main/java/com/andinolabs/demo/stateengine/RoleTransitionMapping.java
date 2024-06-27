@@ -15,12 +15,12 @@ import lombok.Setter;
 import java.util.UUID;
 
 @Entity
-@Table(name = "role_state_transition")
+@Table(name = "role_transition_mapping")
 @Getter
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
-public class RoleStateTransitionMapping {
+public class RoleTransitionMapping {
 
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)

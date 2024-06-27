@@ -1,4 +1,4 @@
-package com.andinolabs.demo.stateengine;
+package com.andinolabs.demo.commons;
 
 public class StateTransitionException extends RuntimeException {
     public StateTransitionException(String message) {
